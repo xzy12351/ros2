@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://xzy12351.github.io/ros2/air/mujoco_uav_neural_ros2/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>神经控制与 ROS 2 / Neural control and ROS 2 - 无人机测距制动 / UAV Ranging and Braking</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "\u795e\u7ecf\u63a7\u5236\u4e0e ROS 2 / Neural control and ROS 2";
+        var mkdocs_page_input_path = "air\\mujoco_uav_neural_ros2.md";
+        var mkdocs_page_url = "/ros2/air/mujoco_uav_neural_ros2/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> 无人机测距制动 / UAV Ranging and Braking
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="搜索文档" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">首页 / Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_course_report/">课程报告 / Course report</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_range_neural_braking/">场景与控制 / Scene and control</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_ranging_dataset/">测距与数据 / Ranging and data</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">神经控制与 ROS 2 / Neural control and ROS 2</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#objective">目标 / Objective</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#learning-controller">学习控制 / Learning controller</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#ros-2-ros-2-node">ROS 2 节点 / ROS 2 node</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_experiment_report/">实验摘要 / Results</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">无人机测距制动 / UAV Ranging and Braking</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">神经控制与 ROS 2 / Neural control and ROS 2</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/xzy12351/ros2/edit/master/docs/air/mujoco_uav_neural_ros2.md"> 编辑页面</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ros-2-lightweight-uav-neural-control-and-ros-2-interface">无人机轻量神经网络与 ROS 2 接口 / Lightweight UAV neural control and ROS 2 interface<a class="headerlink" href="#ros-2-lightweight-uav-neural-control-and-ros-2-interface" title="Permanent link">&para;</a></h1>
+<h2 id="objective">目标 / Objective<a class="headerlink" href="#objective" title="Permanent link">&para;</a></h2>
+<p>本页记录前向测距制动模块的学习控制与 ROS 2 封装。/ This page records the learning controller and ROS 2 wrapper for the forward-ranging braking module.</p>
+<h2 id="learning-controller">学习控制 / Learning controller<a class="headerlink" href="#learning-controller" title="Permanent link">&para;</a></h2>
+<p>训练脚本读取三个数据划分，使用 <code>sensor_range_m</code> 与 <code>closing_speed_m_s</code> 预测解析控制器的加速度标签。/ The training script reads the three dataset splits and predicts the analytical controller's acceleration target from <code>sensor_range_m</code> and <code>closing_speed_m_s</code>.</p>
+<p>模型是 NumPy 实现的两层 MLP：16 个 ReLU 隐藏单元，固定随机种子 2026，权重保存在 <code>models/mlp_controller.json</code>。/ The model is a NumPy two-layer MLP with 16 ReLU units and seed 2026; weights are stored in <code>models/mlp_controller.json</code>.</p>
+<p>当前测试集 MAE 为 0.1454 m/s²，RMSE 为 0.2604 m/s²。默认场景使用 MLP 运行 1000 步，碰撞步数为 0，最小间距为 0.459629 m。/ Current test MAE is 0.1454 m/s² and RMSE is 0.2604 m/s². The default MLP run completes 1000 steps with zero collision steps and 0.459629 m minimum clearance.</p>
+<h2 id="ros-2-ros-2-node">ROS 2 节点 / ROS 2 node<a class="headerlink" href="#ros-2-ros-2-node" title="Permanent link">&para;</a></h2>
+<p><code>ros_node.py</code> 以固定周期推进同一 MuJoCo 仿真，并发布以下话题：/ <code>ros_node.py</code> advances the same MuJoCo simulation on a fixed timer and publishes:</p>
+<table>
+<thead>
+<tr>
+<th>话题 / Topic</th>
+<th>消息 / Message</th>
+<th>内容 / Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/uav/front_range_m</code></td>
+<td><code>std_msgs/Float32</code></td>
+<td>前向测距（米） / Forward range in metres</td>
+</tr>
+<tr>
+<td><code>/uav/braking_accel_m_s2</code></td>
+<td><code>std_msgs/Float32</code></td>
+<td>水平控制加速度 / Horizontal control acceleration</td>
+</tr>
+<tr>
+<td><code>/uav/state</code></td>
+<td><code>std_msgs/Float64MultiArray</code></td>
+<td>时间、测距、闭合速度、高度 / Time, range, closing speed, height</td>
+</tr>
+</tbody>
+</table>
+<p>Ubuntu 22.04 / ROS 2 Humble 中可运行：/ Run on Ubuntu 22.04 / ROS 2 Humble:</p>
+<pre><code class="language-bash">source /opt/ros/humble/setup.bash
+ros2 launch ./launch/ros_node.launch.py controller:=mlp
+ros2 topic echo /uav/state
+</code></pre>
+<p>该节点用于模块级闭环观察和话题联调；当前模型固定航向，未模拟姿态、电机和真实飞控接口。/ The node supports module-level closed-loop observation and topic integration; the current model has fixed heading and does not model attitude, motors, or a real flight-controller interface.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../mujoco_uav_ranging_dataset/" class="btn btn-neutral float-left" title="测距与数据 / Ranging and data"><span class="icon icon-circle-arrow-left"></span> 前一页</a>
+        <a href="../mujoco_uav_experiment_report/" class="btn btn-neutral float-right" title="实验摘要 / Results">后一页 <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/xzy12351/ros2" style="color: #fcfcfc">OpenHUTB</a>
+        </span>
+    
+    
+      <span><a href="../mujoco_uav_ranging_dataset/" style="color: #fcfcfc">&laquo; 前一页</a></span>
+    
+    
+      <span><a href="../mujoco_uav_experiment_report/" style="color: #fcfcfc">后一页 &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html class="writer-html5" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://xzy12351.github.io/ros2/air/mujoco_uav_range_neural_braking/" rel="canonical"/>
+<link href="../../img/favicon.ico" rel="shortcut icon"/>
+<title>场景与控制 / Scene and control - 无人机测距制动 / UAV Ranging and Braking</title>
+<link href="../../css/theme.css" rel="stylesheet"/>
+<link href="../../css/theme_extra.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" rel="stylesheet"/>
+<script>
+        // Current page data
+        var mkdocs_page_name = "\u573a\u666f\u4e0e\u63a7\u5236 / Scene and control";
+        var mkdocs_page_input_path = "air\\mujoco_uav_range_neural_braking.md";
+        var mkdocs_page_url = "/ros2/air/mujoco_uav_range_neural_braking/";
+      </script>
+<!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</head>
+<body class="wy-body-for-nav" role="document">
+<div class="wy-grid-for-nav">
+<nav class="wy-nav-side stickynav" data-toggle="wy-nav-shift">
+<div class="wy-side-scroll">
+<div class="wy-side-nav-search">
+<a class="icon icon-home" href="../.."> 无人机测距制动 / UAV Ranging and Braking
+        </a><div role="search">
+<form action="../../search.html" class="wy-form" id="rtd-search-form" method="get">
+<input aria-label="Search docs" name="q" placeholder="搜索文档" title="Type search term here" type="text"/>
+</form>
+</div>
+</div>
+<div aria-label="Navigation menu" class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../..">首页 / Home</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_course_report/">课程报告 / Course report</a>
+</li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal current" href="#">场景与控制 / Scene and control</a>
+<ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="#scene-and-model">场景与模型 / Scene and model</a>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#control-structure">控制结构 / Control structure</a>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#environment-and-entry-points">环境与入口 / Environment and entry points</a>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#simulation-results">仿真结果 / Simulation results</a>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#file-responsibilities">文件职责 / File responsibilities</a>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#references">参考 / References</a>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_ranging_dataset/">测距与数据 / Ranging and data</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_neural_ros2/">神经控制与 ROS 2 / Neural control and ROS 2</a>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_experiment_report/">实验摘要 / Results</a>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+<section class="wy-nav-content-wrap" data-toggle="wy-nav-shift">
+<nav aria-label="Mobile navigation menu" class="wy-nav-top" role="navigation">
+<i class="fa fa-bars" data-toggle="wy-nav-top"></i>
+<a href="../..">无人机测距制动 / UAV Ranging and Braking</a>
+</nav>
+<div class="wy-nav-content">
+<div class="rst-content"><div aria-label="breadcrumbs navigation" role="navigation">
+<ul class="wy-breadcrumbs">
+<li><a aria-label="Docs" class="icon icon-home" href="../.."></a></li>
+<li class="breadcrumb-item active">场景与控制 / Scene and control</li>
+<li class="wy-breadcrumbs-aside">
+<a href="https://github.com/xzy12351/ros2/edit/master/docs/air/mujoco_uav_range_neural_braking.md"> 编辑页面</a>
+</li>
+</ul>
+<hr/>
+</div>
+<div class="document" itemscope="itemscope" itemtype="http://schema.org/Article" role="main">
+<div class="section" itemprop="articleBody">
+<h1 id="mujoco-indoor-uav-safe-braking-and-altitude-hold">MuJoCo 室内无人机安全制动与定高悬停 / Indoor UAV safe braking and altitude hold<a class="headerlink" href="#mujoco-indoor-uav-safe-braking-and-altitude-hold" title="Permanent link">¶</a></h1>
+<h2 id="scene-and-model">场景与模型 / Scene and model<a class="headerlink" href="#scene-and-model" title="Permanent link">¶</a></h2>
+<p>无人机沿室内通道接近固定障碍物，水平速度连续衰减并在障碍物前停止。模型采用水平、竖直两个平移自由度，固定航向；保留重力、质量、阻尼和接触。该模型研究纵向制动与高度保持，不描述六自由度姿态和旋翼气动。</p>
+<p>The UAV approaches a fixed obstacle in an indoor corridor and brakes continuously. Two translational degrees of freedom retain gravity, mass, damping and contact with fixed heading. The model covers longitudinal braking and altitude hold rather than six-degree-of-freedom attitude or rotor aerodynamics.</p>
+<p><img alt="物理场景 / Physics scene" src="../../img/mujoco_uav_range_neural_braking/scene.png"/></p>
+<p>源码 / Source: <code>src/air/mujoco_uav_range_neural_braking/</code>。</p>
+<h2 id="control-structure">控制结构 / Control structure<a class="headerlink" href="#control-structure" title="Permanent link">¶</a></h2>
+<div class="mermaid">flowchart LR
+    A[间距与速度 / Clearance and speed] --&gt; B[目标速度 / Target speed]
+    B --&gt; C[连续制动力 / Continuous braking force]
+    C --&gt; D[MuJoCo 物理步进 / Physics step]
+    D --&gt; A
+    E[高度误差 / Height error] --&gt; F[重力补偿与PD / Gravity compensation and PD]
+    F --&gt; D
+</div>
+<p>设表面间距为 <span class="arithmatex">\(d\)</span>、前进速度为 <span class="arithmatex">\(v\)</span>、总质量为 <span class="arithmatex">\(m\)</span>。几何参照控制器使用：</p>
+<p>Let <span class="arithmatex">\(d\)</span> denote surface clearance, <span class="arithmatex">\(v\)</span> forward speed and <span class="arithmatex">\(m\)</span> total mass. The geometric reference controller uses:</p>
+<div class="arithmatex">\[
+v_r=\min(1.5,\sqrt{2\cdot0.8\max(d-0.8,0)}),\quad
+a_x=\operatorname{clip}(3(v_r-v),-2.5,1.2),\quad F_x=ma_x.
+\]</div>
+<div class="arithmatex">\[
+F_z=m\left[9.81+16(z_r-z)-8\dot z\right].
+\]</div>
+<p>场景质量由 MuJoCo 模型读取，含机身与支臂，共 0.52 kg；控制周期 0.01 s。0.8 m 为减速参考值，不是停车距离保证。控制过程通过施力改变运动，不在制动时清零速度。场景同时定义朝前测距射线，几何间距当前用于建立参照基线。</p>
+<p>Mass is read from the MuJoCo body, including the airframe and arms, totaling 0.52 kg. The control period is 0.01 s. The 0.8 m parameter is a braking reference rather than a guaranteed stop gap. Forces change motion without directly resetting velocity. A forward rangefinder is defined in the scene; geometric clearance establishes the reference baseline.</p>
+<h2 id="environment-and-entry-points">环境与入口 / Environment and entry points<a class="headerlink" href="#environment-and-entry-points" title="Permanent link">¶</a></h2>
+<p>Python 3.10–3.11，MuJoCo 3.12.0。ROS launch 使用 Ubuntu 22.04 / ROS 2 Humble。在模块目录执行：</p>
+<p>Python 3.10–3.11 and MuJoCo 3.12.0. ROS launch uses Ubuntu 22.04 / ROS 2 Humble. Run from the module directory:</p>
+<pre><code class="language-bash">python -m pip install -r requirements.txt
+python main.py --headless --controller reference --output results
+python main.py
+python evaluate.py --output results --render
+python -m pytest -q
+</code></pre>
+<p><code>main.py</code> 输出轨迹 CSV 和指标 JSON；不带 <code>--headless</code> 时显示交互窗口。<code>evaluate.py</code> 输出三组速度对照、场景图和 GIF。旧入口 <code>src/ground/mujoco_drone_distance_stop/main.py</code> 转发到同一模块。</p>
+<p><code>main.py</code> writes trajectory CSV and metric JSON; omitting <code>--headless</code> opens the interactive viewer. <code>evaluate.py</code> exports speed comparisons, a scene image and a GIF. The original ground-directory entry forwards to this module.</p>
+<pre><code class="language-bash">source /opt/ros/humble/setup.bash
+ros2 launch ./launch/main.launch.py controller:=reference output:=/tmp/uav_braking
+</code></pre>
+<p><code>launch/main.launch.py</code> 启动无窗口 MuJoCo 仿真；<code>launch/ros_node.launch.py</code> 提供 ROS 2 测距、控制与状态话题。<code>range</code>、<code>reference</code> 和训练后的 <code>mlp</code> 控制器均可由参数选择。</p>
+<p><code>launch/main.launch.py</code> runs the headless MuJoCo simulation; <code>launch/ros_node.launch.py</code> provides ROS 2 range, control and state topics. The <code>range</code>, <code>reference</code> and trained <code>mlp</code> controllers are selectable by argument.</p>
+<p>Windows 环境下 16 项物理、传感器、数据和 MLP 检查通过。ROS 2 Humble 容器中，测距节点成功初始化并完成一次仿真步进；默认测距控制场景运行 1000 步无碰撞，最小间距为 0.668331 m。</p>
+<p>Sixteen physics, sensor, dataset and MLP checks pass on Windows. The ranging node initializes and advances one simulation step in a ROS 2 Humble container. The default range-control scene completes 1000 steps without contact, with a 0.668331 m minimum clearance.</p>
+<h2 id="simulation-results">仿真结果 / Simulation results<a class="headerlink" href="#simulation-results" title="Permanent link">¶</a></h2>
+<p>起始机身中心 x=-7 m，障碍物中心 x=0 m，参考高度 1.2 m，每组运行 10 s。以下为本场景实测，不代表所有初始条件下的安全保证。</p>
+<p>The airframe starts at x=-7 m, the obstacle at x=0 m, and reference height is 1.2 m. Each episode runs for 10 s. These measurements apply to the specified scene and do not guarantee safety for arbitrary initial conditions.</p>
+<table>
+<thead>
+<tr>
+<th>初速度 / Initial speed (m/s)</th>
+<th>碰撞步数 / Contact steps</th>
+<th>最小间距 / Minimum clearance (m)</th>
+<th>最终速度绝对值 / Absolute final speed (m/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.0</td>
+<td>0</td>
+<td>0.629500</td>
+<td>&lt; 0.000001</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>0</td>
+<td>0.629413</td>
+<td>&lt; 0.000001</td>
+</tr>
+<tr>
+<td>3.0</td>
+<td>0</td>
+<td>0.629409</td>
+<td>&lt; 0.000001</td>
+</tr>
+</tbody>
+</table>
+<p>三组初始高度均等于参考高度，最大高度误差为 0；另以 0.1 m 高度偏移检查恢复，末端误差小于 0.005 m。三组制动、一次高度恢复及三组无效参数检查共 7 项通过。</p>
+<p>Initial altitude equals the reference in all three episodes, giving zero maximum height error. A separate 0.1 m height perturbation recovers to within 0.005 m. Seven checks cover braking, height recovery and invalid parameters.</p>
+<p><img alt="制动曲线 / Braking curves" src="../../img/mujoco_uav_range_neural_braking/braking_curves.png"/></p>
+<p><img alt="制动过程 / Braking sequence" src="../../img/mujoco_uav_range_neural_braking/braking.gif"/></p>
+<h2 id="file-responsibilities">文件职责 / File responsibilities<a class="headerlink" href="#file-responsibilities" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>文件 / File</th>
+<th>职责 / Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scene.xml</code></td>
+<td>物理体、碰撞和前向测距 / Bodies, contact and forward ranging</td>
+</tr>
+<tr>
+<td><code>simulation.py</code></td>
+<td>场景参数、物理控制与指标 / Scenario parameters, physics control and metrics</td>
+</tr>
+<tr>
+<td><code>main.py</code></td>
+<td>完整运行与数据导出 / Complete execution and data export</td>
+</tr>
+<tr>
+<td><code>evaluate.py</code></td>
+<td>多速度评估与图像输出 / Speed evaluation and visual output</td>
+</tr>
+<tr>
+<td><code>launch/main.launch.py</code></td>
+<td>ROS launch 进程启动 / ROS launch process entry</td>
+</tr>
+<tr>
+<td><code>test_simulation.py</code></td>
+<td>制动、恢复和参数检查 / Braking, recovery and parameter checks</td>
+</tr>
+</tbody>
+</table>
+<h2 id="references">参考 / References<a class="headerlink" href="#references" title="Permanent link">¶</a></h2>
+<p>默认运行采用前向测距与距离差分速度，几何控制仅作参照。详见<a href="../mujoco_uav_ranging_dataset/">测距与数据集</a>。 / Default execution uses forward ranging and finite-difference speed; geometric control is a reference. See <a href="../mujoco_uav_ranging_dataset/">Ranging and datasets</a>.</p>
+<ul>
+<li><a href="https://mujoco.readthedocs.io/en/stable/python.html">MuJoCo Python</a></li>
+<li><a href="https://mujoco.readthedocs.io/en/stable/XMLreference.html#sensor-rangefinder">MuJoCo rangefinder</a></li>
+</ul>
+</div>
+</div><footer>
+<div aria-label="Footer Navigation" class="rst-footer-buttons" role="navigation">
+<a class="btn btn-neutral float-left" href="../mujoco_uav_course_report/" title="课程报告 / Course report"><span class="icon icon-circle-arrow-left"></span> 前一页</a>
+<a class="btn btn-neutral float-right" href="../mujoco_uav_ranging_dataset/" title="测距与数据 / Ranging and data">后一页 <span class="icon icon-circle-arrow-right"></span></a>
+</div>
+<hr/>
+<div role="contentinfo">
+<!-- Copyright etc -->
+</div>
+</footer>
+</div>
+</div>
+</section>
+</div>
+<div aria-label="Versions" class="rst-versions" role="note">
+<span class="rst-current-version" data-toggle="rst-current-version">
+<span>
+<a href="https://github.com/xzy12351/ros2" style="color: #fcfcfc">OpenHUTB</a>
+</span>
+<span><a href="../mujoco_uav_course_report/" style="color: #fcfcfc">« 前一页</a></span>
+<span><a href="../mujoco_uav_ranging_dataset/" style="color: #fcfcfc">后一页 »</a></span>
+</span>
+</div>
+<script src="../../js/jquery-3.6.0.min.js"></script>
+<script>var base_url = "../..";</script>
+<script src="../../js/theme_extra.js"></script>
+<script src="../../js/theme.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="../../search/main.js"></script>
+<script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+<script type="module">import mermaid from "https://unpkg.com/mermaid@10.4.0/dist/mermaid.esm.min.mjs";
+mermaid.initialize({});</script></body>
+</html>

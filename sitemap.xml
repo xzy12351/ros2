@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://xzy12351.github.io/ros2/</loc>
+         <lastmod>2026-10-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://xzy12351.github.io/ros2/air/mujoco_uav_course_report/</loc>
+         <lastmod>2026-10-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://xzy12351.github.io/ros2/air/mujoco_uav_experiment_report/</loc>
+         <lastmod>2026-10-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://xzy12351.github.io/ros2/air/mujoco_uav_neural_ros2/</loc>
+         <lastmod>2026-10-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://xzy12351.github.io/ros2/air/mujoco_uav_range_neural_braking/</loc>
+         <lastmod>2026-10-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://xzy12351.github.io/ros2/air/mujoco_uav_ranging_dataset/</loc>
+         <lastmod>2026-10-23</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+</urlset>

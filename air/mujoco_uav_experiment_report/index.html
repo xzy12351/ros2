@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://xzy12351.github.io/ros2/air/mujoco_uav_experiment_report/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>实验摘要 / Results - 无人机测距制动 / UAV Ranging and Braking</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "\u5b9e\u9a8c\u6458\u8981 / Results";
+        var mkdocs_page_input_path = "air\\mujoco_uav_experiment_report.md";
+        var mkdocs_page_url = "/ros2/air/mujoco_uav_experiment_report/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> 无人机测距制动 / UAV Ranging and Braking
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="搜索文档" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">首页 / Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_course_report/">课程报告 / Course report</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_range_neural_braking/">场景与控制 / Scene and control</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_ranging_dataset/">测距与数据 / Ranging and data</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../mujoco_uav_neural_ros2/">神经控制与 ROS 2 / Neural control and ROS 2</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">实验摘要 / Results</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#objective">实验目的 / Objective</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#method">方法 / Method</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#results">结果 / Results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#reproduction">复现 / Reproduction</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#scope">适用范围 / Scope</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">无人机测距制动 / UAV Ranging and Braking</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">实验摘要 / Results</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/xzy12351/ros2/edit/master/docs/air/mujoco_uav_experiment_report.md"> 编辑页面</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="uav-ranging-and-braking-experiment-report">无人机测距制动实验报告 / UAV ranging and braking experiment report<a class="headerlink" href="#uav-ranging-and-braking-experiment-report" title="Permanent link">&para;</a></h1>
+<h2 id="objective">实验目的 / Objective<a class="headerlink" href="#objective" title="Permanent link">&para;</a></h2>
+<p>比较几何真值参照控制器、前向测距控制器和轻量 MLP 控制器在同一固定航向 MuJoCo 场景中的制动表现，并记录按回合划分的数据集与训练误差。/ Compare the geometric reference, forward-ranging and lightweight MLP controllers in the same fixed-heading MuJoCo scene, and record episode-level data splits and training error.</p>
+<h2 id="method">方法 / Method<a class="headerlink" href="#method" title="Permanent link">&para;</a></h2>
+<p>场景保留质量、重力和障碍碰撞；水平运动沿固定航向，竖直高度由独立 PD 回路保持。MLP 使用前向测距与闭合速度作为输入，回归解析测距控制器的水平加速度，隐藏层包含 16 个 ReLU 单元。/ The scene retains mass, gravity and obstacle contact. Horizontal motion has fixed heading and a separate PD loop holds altitude. The MLP regresses the analytical ranging controller's horizontal acceleration from forward range and closing speed, using 16 ReLU hidden units.</p>
+<p>数据由固定种子 2026 的 30 个 12 s 回合生成，按回合划分为 18 个训练、6 个验证和 6 个测试回合；样本数分别为 21600、7200 和 7200。/ A fixed seed of 2026 generates thirty 12 s episodes, split by episode into 18 training, 6 validation and 6 test episodes, with 21600, 7200 and 7200 rows respectively.</p>
+<h2 id="results">结果 / Results<a class="headerlink" href="#results" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>控制器 / Controller</th>
+<th style="text-align: right;">初速度 / Initial speed</th>
+<th style="text-align: right;">最小间距 / Minimum clearance</th>
+<th style="text-align: right;">末速度 / Final speed</th>
+<th style="text-align: right;">碰撞步数 / Contact steps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>几何参照 / Geometric reference</td>
+<td style="text-align: right;">1.5 m/s</td>
+<td style="text-align: right;">0.6294 m</td>
+<td style="text-align: right;">接近 0 / near 0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>测距控制 / Range control</td>
+<td style="text-align: right;">1.5 m/s</td>
+<td style="text-align: right;">0.6683 m</td>
+<td style="text-align: right;">接近 0 / near 0</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>MLP 控制 / MLP control</td>
+<td style="text-align: right;">1.5 m/s</td>
+<td style="text-align: right;">0.4596 m</td>
+<td style="text-align: right;">-0.0562 m/s</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p>MLP 测试集 MAE 为 0.1454 m/s²，RMSE 为 0.2604 m/s²。三种控制均在该场景完成 1000 个物理步且未产生碰撞；本结果显示 MLP 已能完成基础制动，但其最小间距小于解析测距控制器，仍有改进空间。/ MLP test MAE is 0.1454 m/s² and RMSE is 0.2604 m/s². All three controllers complete 1000 physics steps in this scene without contact. The MLP performs basic braking, while its minimum clearance is smaller than that of the analytical ranging controller, leaving room for improvement.</p>
+<h2 id="reproduction">复现 / Reproduction<a class="headerlink" href="#reproduction" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash">python dataset.py --seed 2026 --episodes 30 --output datasets
+python train.py --data datasets --output models
+python main.py --headless --controller reference --speed 1.5 --output results/reference
+python main.py --headless --controller range --speed 1.5 --output results/range
+python main.py --headless --controller mlp --model models/mlp_controller.json --speed 1.5 --output results/mlp
+</code></pre>
+<h2 id="scope">适用范围 / Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h2>
+<p>三档初速度的扩展对比及完整操作步骤见<a href="../mujoco_uav_course_report/">课程报告</a>。MLP 在 3 m/s 外推工况记录到 3 个接触步，最小间距为 -0.004636 m；该速度超过数据采集的 2.5 m/s 上限。默认 1.5 m/s 结果不能推广到高速接近工况。 / See the <a href="../mujoco_uav_course_report/">course report</a> for three-speed comparisons and complete procedures. At the extrapolation speed of 3 m/s, the MLP records three contact steps and a minimum clearance of -0.004636 m. This speed exceeds the 2.5 m/s data-collection limit. Default-speed results do not establish performance for faster approaches.</p>
+<p>该模型用于比较固定航向简化场景中的水平制动控制，不包含完整六自由度姿态、旋翼动力学、真实传感器噪声或飞控硬件接口。指标只描述上述 MuJoCo 场景，不外推为真实飞行安全结论。/ This model compares horizontal braking in a simplified fixed-heading scene. It does not include full six-degree-of-freedom attitude, rotor dynamics, real sensor noise or a flight-controller hardware interface. The metrics apply only to the stated MuJoCo scene and are not a real-flight safety claim.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../mujoco_uav_neural_ros2/" class="btn btn-neutral float-left" title="神经控制与 ROS 2 / Neural control and ROS 2"><span class="icon icon-circle-arrow-left"></span> 前一页</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/xzy12351/ros2" style="color: #fcfcfc">OpenHUTB</a>
+        </span>
+    
+    
+      <span><a href="../mujoco_uav_neural_ros2/" style="color: #fcfcfc">&laquo; 前一页</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
